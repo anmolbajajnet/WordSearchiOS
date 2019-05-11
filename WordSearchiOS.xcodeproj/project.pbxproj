@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BA7E89B722875AFE009140F2 /* WordCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA7E89B622875AFE009140F2 /* WordCollectionViewCell.swift */; };
 		BAACAE7222874C4400A2FE79 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAACAE7122874C4400A2FE79 /* AppDelegate.swift */; };
 		BAACAE7422874C4400A2FE79 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAACAE7322874C4400A2FE79 /* ViewController.swift */; };
 		BAACAE7722874C4400A2FE79 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BAACAE7522874C4400A2FE79 /* Main.storyboard */; };
@@ -34,6 +35,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		BA7E89B622875AFE009140F2 /* WordCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WordCollectionViewCell.swift; sourceTree = "<group>"; };
 		BAACAE6E22874C4400A2FE79 /* WordSearchiOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WordSearchiOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BAACAE7122874C4400A2FE79 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		BAACAE7322874C4400A2FE79 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -99,6 +101,7 @@
 			children = (
 				BAACAE7122874C4400A2FE79 /* AppDelegate.swift */,
 				BAACAE7322874C4400A2FE79 /* ViewController.swift */,
+				BA7E89B622875AFE009140F2 /* WordCollectionViewCell.swift */,
 				BAACAE7522874C4400A2FE79 /* Main.storyboard */,
 				BAACAE7822874C4700A2FE79 /* Assets.xcassets */,
 				BAACAE7A22874C4700A2FE79 /* LaunchScreen.storyboard */,
@@ -256,6 +259,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BA7E89B722875AFE009140F2 /* WordCollectionViewCell.swift in Sources */,
 				BAACAE7422874C4400A2FE79 /* ViewController.swift in Sources */,
 				BAACAE7222874C4400A2FE79 /* AppDelegate.swift in Sources */,
 			);
