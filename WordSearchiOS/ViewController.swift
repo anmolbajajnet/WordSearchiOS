@@ -13,7 +13,6 @@ class ViewController: UIViewController {
     let words = ["A","B","C","D","E","F","G","H","I","G","H"]
     
     @IBOutlet weak var wordCollectionView: UICollectionView!
-    
     let cellIdentifier = "WordCell"
     
     override func viewDidLoad() {
@@ -42,6 +41,7 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = wordCollectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as! WordCollectionViewCell
         cell.wordLabel.text = words[indexPath.item]
+        cell.backgroundColor = UIColor.random()
         return cell
     }
     
@@ -49,7 +49,19 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
         print(indexPath.item)
     }
     
-
     
+    
+    
+}
+
+//Extend UIColor to generate random colors for cell background color
+extension UIColor {
+    static func random () -> UIColor {
+        return UIColor(
+            red: CGFloat.random(in: 0...1),
+            green: CGFloat.random(in: 0...1),
+            blue: CGFloat.random(in: 0...1),
+            alpha: 1.0)
+    }
 }
 
