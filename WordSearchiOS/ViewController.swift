@@ -9,7 +9,9 @@
 import UIKit
 
 class ViewController: UIViewController {
-
+    @IBOutlet weak var scoreLabel: UILabel!
+    var score = 0
+    
     let  words = [["Q","A","S","J","X","V","J","F","Z","C"],
                  ["W","W","E","G","C","J","J","Q","E", "D"],
                  ["D","B","E","K","C","R","H","V","A","X"],
@@ -21,7 +23,7 @@ class ViewController: UIViewController {
                  ["C","B","V","A","R","I","A","B","L","E"],
                  ["O","E","F","V","X","B","U","S","K","E"]]
     
-    let targetWords = ["KOTLIN", "JAVA","VARIABLE"]
+    let targetWords = ["KOTLIN", "JAVA","VARIABLE","OBJECTIVEC","MOBILE", "SWIFT"]
     var selectedWord  = ""
 
     
@@ -71,6 +73,7 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
         return cell
     }
     
+    
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let cell = wordCollectionView.cellForItem(at: indexPath) as! WordCollectionViewCell
         let unselectedColor = UIColor.white
@@ -89,12 +92,13 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
         for i in targetWords{
             if selectedWord == i {
                 print("YESS")
+                score += 1
+                scoreLabel.text = String(score)
                 selectedWord.removeAll()
             }
         }
         
     }
-    
 }
     
 
