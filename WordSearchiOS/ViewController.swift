@@ -10,6 +10,12 @@ import UIKit
 
 class ViewController: UIViewController {
     @IBOutlet weak var scoreLabel: UILabel!
+    @IBOutlet weak var javaLabel: UILabel!
+    @IBOutlet weak var variableLabel: UILabel!
+    @IBOutlet weak var kotlinLabel: UILabel!
+    @IBOutlet weak var objectiveCLabel: UILabel!
+    @IBOutlet weak var mobileLabel: UILabel!
+    @IBOutlet weak var swiftLabel: UILabel!
     var score = 0
     
     let  words = [["Q","A","S","J","X","V","J","F","Z","C"],
@@ -78,7 +84,6 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
         let cell = wordCollectionView.cellForItem(at: indexPath) as! WordCollectionViewCell
         let unselectedColor = UIColor.white
         let selectedColor = UIColor.green
-        
         if cell.backgroundColor == unselectedColor {
             cell.backgroundColor = selectedColor
             selectedWord.append(words[indexPath.section][indexPath.item])
@@ -92,12 +97,32 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
         for i in targetWords{
             if selectedWord == i {
                 print("YESS")
-                score += 1
-                scoreLabel.text = String(score)
+                updateScore()
+                foundWords()
                 selectedWord.removeAll()
             }
         }
-        
+    }
+    
+    func foundWords() {
+        if selectedWord == "JAVA" {
+            javaLabel.attributedText = selectedWord.strikeThrough()
+        } else if selectedWord == "SWIFT" {
+            swiftLabel.attributedText = selectedWord.strikeThrough()
+        } else if selectedWord == "VARIABLE"{
+            variableLabel.attributedText = selectedWord.strikeThrough()
+        } else if selectedWord == "KOTLIN" {
+            kotlinLabel.attributedText = selectedWord.strikeThrough()
+        } else if selectedWord == "OBJECTIVEC" {
+            objectiveCLabel.attributedText = selectedWord.strikeThrough()
+        } else if selectedWord == "MOBILE" {
+            mobileLabel.attributedText = selectedWord.strikeThrough()
+        }
+    }
+    
+    func updateScore() {
+        score += 1
+        scoreLabel.text = String(score)
     }
 }
     
@@ -115,14 +140,12 @@ extension ViewController : UICollectionViewDelegateFlowLayout {
         let paddingSpace = sectionInsets.left * (itemsPerRow + 1)
         let availableWidth = view.frame.width - paddingSpace
         let widthPerItem = availableWidth / itemsPerRow
-
         return CGSize(width: widthPerItem, height: widthPerItem)
     }
 }
 
 
 //Extend UIColor to generate random colors for cell background color.
-
 extension UIColor {
     static func random () -> UIColor {
         return UIColor(
@@ -130,6 +153,17 @@ extension UIColor {
             green: CGFloat.random(in: 0...1),
             blue: CGFloat.random(in: 0...1),
             alpha: 1.0)
+    }
+}
+
+
+// Allow a red "strikethough" line over the word when it is found in the word search
+extension String{
+    func strikeThrough()->NSAttributedString{
+        let attributeString: NSMutableAttributedString =  NSMutableAttributedString(string: self)
+        attributeString.addAttribute(NSAttributedString.Key.strikethroughStyle, value: NSUnderlineStyle.single.rawValue, range: NSMakeRange(0, attributeString.length))
+        attributeString.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor.red, range: NSMakeRange(0, attributeString.length))
+        return attributeString
     }
 }
 
