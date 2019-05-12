@@ -20,6 +20,9 @@ class ViewController: UIViewController {
                  ["F","T","J","A","V","A","J","F","N","L"],
                  ["C","B","V","A","R","I","A","B","L","E"],
                  ["O","E","F","V","X","B","U","S","K","E"]]
+    
+    let targetWords = ["KOTLIN", "JAVA","VARIABLE"]
+    var selectedWord  = ""
 
     
     
@@ -47,7 +50,6 @@ class ViewController: UIViewController {
         wordCollectionView.delegate = self
         wordCollectionView.dataSource = self
     }
- 
 }
 
 extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
@@ -76,10 +78,20 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
         
         if cell.backgroundColor == unselectedColor {
             cell.backgroundColor = selectedColor
+            selectedWord.append(words[indexPath.section][indexPath.item])
         } else {
             cell.backgroundColor = unselectedColor
+            if selectedWord.isEmpty == false { selectedWord.removeLast() }
         }
-         print(indexPath.section,indexPath.item)
+        print(indexPath.section,indexPath.item)
+        print(words[indexPath.section][indexPath.item])
+        print(selectedWord)
+        for i in targetWords{
+            if selectedWord == i {
+                print("YESS")
+                selectedWord.removeAll()
+            }
+        }
         
     }
     
