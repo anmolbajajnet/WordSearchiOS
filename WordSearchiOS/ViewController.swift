@@ -30,9 +30,17 @@ class ViewController: UIViewController {
                  ["O","E","F","V","X","B","U","S","K","E"]]
     
     let targetWords = ["KOTLIN", "JAVA","VARIABLE","OBJECTIVEC","MOBILE", "SWIFT"]
-    var selectedWord  = ""
+    var selectedWord = ""
+    var selectedDir = -1
+    var firstWordIndex:[Int] = []
+    var lastWordIndex:[Int] = []
+    var possibleWordSelections: [[Int]] = [[]]
+    var selectionArray: [[Int]] = [[]]
+    
 
     
+    
+
     
     @IBOutlet weak var wordCollectionView: UICollectionView!
     let cellIdentifier = "WordCell"
@@ -51,6 +59,7 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         collectionViewSetup()
+
     }
     
     //Set up data source methods
@@ -74,8 +83,6 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
         let cell = wordCollectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as! WordCollectionViewCell
         cell.wordLabel.text = words[indexPath.section][indexPath.item]
         cell.wordLabel.textAlignment = NSTextAlignment.center;
-        // The random() generates dark colors sometimes, which make the black word font unreadable. Come back to it.
-        //cell.backgroundColor = UIColor.random()
         return cell
     }
     
@@ -84,15 +91,84 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
         let cell = wordCollectionView.cellForItem(at: indexPath) as! WordCollectionViewCell
         let unselectedColor = UIColor.white
         let selectedColor = UIColor.green
-        if cell.backgroundColor == unselectedColor {
+
+        var currentWordPosition = [indexPath.section,indexPath.item]
+        print("Current Word Position Is")
+        print(currentWordPosition)
+        print(selectedWord)
+        print("count of selected word is")
+        print(selectedWord.count)
+        if selectedWord.isEmpty {
+            firstWordIndex.insert(indexPath.section, at: 0)
+            firstWordIndex.insert(indexPath.item, at: 1)
+        
+        }
+        print("first word index is")
+        print(firstWordIndex)
+        
+        // Fix Direction
+        
+       
+        if selectedWord.count == 1 {
+            //Horizontal
+            if (firstWordIndex[0] == currentWordPosition[0]){
+                selectedDir = 1
+            }
+            //Verticle
+            else if(firstWordIndex[1] == currentWordPosition[1]){
+                selectedDir = 2
+            }
+            //Diagonal Left
+            else if(currentWordPosition[0] == firstWordIndex[0] + 1 && currentWordPosition[1] == firstWordIndex[1] - 1){
+                selectedDir = 4
+            }
+            //Diagonal Right
+            else{
+                selectedDir = 3
+            }
+            
+            lastWordIndex.insert(currentWordPosition[0], at: 0)
+            lastWordIndex.insert(currentWordPosition[1], at: 1)
+            
+        }
+//        lastWordIndex = [currentWordPosition[0],currentWordPosition[1]]
+        
+        print("Last word is")
+        print(lastWordIndex)
+        print("Selected direction is")
+        print(selectedDir)
+
+
+        if (selectedWord.isEmpty || possibleToSelect(availableToSelect: possibleWordSelections, row: currentWordPosition[0], column: currentWordPosition[1])) {
             cell.backgroundColor = selectedColor
             selectedWord.append(words[indexPath.section][indexPath.item])
-        } else {
-            cell.backgroundColor = unselectedColor
-            if selectedWord.isEmpty == false { selectedWord.removeLast() }
+     
+
+                
+        
+            possibleWordSelections = nextDirection(row: indexPath.section, column: indexPath.item, lenOfWord: selectedWord.count+1)
+            print("possible word selections")
+            print(possibleWordSelections)
+            
         }
-        print(indexPath.section,indexPath.item)
-        print(words[indexPath.section][indexPath.item])
+        else {
+            cell.backgroundColor = unselectedColor
+            if selectedWord.isEmpty == false {
+                selectedWord.removeLast()
+            } else {
+                firstWordIndex.removeAll()
+                lastWordIndex.removeAll()
+                selectedWord.removeAll()
+                selectedDir = -1
+            }
+        }
+        
+
+        
+    
+ 
+    
+        
         print(selectedWord)
         for i in targetWords{
             if selectedWord == i {
@@ -100,10 +176,132 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
                 updateScore()
                 foundWords()
                 selectedWord.removeAll()
+                firstWordIndex.removeAll()
+                lastWordIndex.removeAll()
+                selectedDir = -1
             }
         }
     }
     
+    func possibleToSelect(availableToSelect: [[Int]], row: Int, column: Int) -> Bool {
+        for i in availableToSelect {
+            if i[0] ==  row && i[1] == column {
+                return true
+            }
+        }
+        return false
+    }
+    
+    func inRange(vari: Int)->Bool{
+        if ( vari >= 0 && vari <= 9){
+            return true
+        }
+        return false
+    }
+    
+    func nextDirection(row: Int,column: Int, lenOfWord: Int) -> [[Int]] {
+        
+        
+        
+        
+        if (selectedDir < 1 ) {
+            return [[row-1,column-1],[row-1,column],[row-1,column+1],[row,column-1],[row,column+1],[row+1,column-1],[row+1,column],[row+1,column+1]]
+        }
+        else if(selectedDir == 1){
+            
+            if (column == lastWordIndex[1] + 1 && row == lastWordIndex[0]) {
+                if (inRange(vari: lastWordIndex[1] + 1)) {
+                    lastWordIndex[0] = row
+                    lastWordIndex[1] = column
+                    print("Last row to the right")
+                    print("PLS")
+                    print(lastWordIndex)
+                }
+            }
+            
+            if (column == firstWordIndex[1] - 1 && row == firstWordIndex[0]) {
+                if (inRange(vari: firstWordIndex[1] - 1)) {
+                    firstWordIndex[0] = row;
+                    firstWordIndex[1] = column;
+                    print("To the left of current column")
+                    print("PLS")
+                }
+            }
+
+            
+            
+            return [ [lastWordIndex[0], lastWordIndex[1] + 1 ], [firstWordIndex[0], firstWordIndex[1] - 1] ]
+        }
+        else if(selectedDir == 2){
+            
+            if(row == firstWordIndex[0] - 1 && column == firstWordIndex[1]){
+                if (inRange(vari: firstWordIndex[0] - 1)) {
+                    firstWordIndex[0] = row
+                    firstWordIndex[1] = column
+                    print("Above current culumn")
+                    print("PLS")
+                }
+            }
+            
+            if (row == lastWordIndex[0] + 1 && column == lastWordIndex[1]) {
+                if inRange(vari: lastWordIndex[0] + 1) {
+                    lastWordIndex[0] = row
+                    lastWordIndex[1] = column
+                    print("To the bottom")
+                    print("PLS")
+                }
+            }
+            
+            
+            return [ [lastWordIndex[0] + 1, lastWordIndex[1]] , [firstWordIndex[0] - 1, firstWordIndex[1]] ]
+        }
+        else if (selectedDir == 4 ){
+            
+            
+            if (row == lastWordIndex[0]+1 && column == lastWordIndex[1]-1) {
+                if (inRange(vari: lastWordIndex[0]+1) && inRange(vari: lastWordIndex[1]-1)){
+                    lastWordIndex[0] = row
+                    lastWordIndex[1] = column
+                }
+            }
+            
+            if (row == firstWordIndex[0]-1 && column == firstWordIndex[1]+1) {
+                if (inRange(vari: firstWordIndex[0]-1) && inRange(vari: firstWordIndex[1]+1)){
+                    firstWordIndex[0] = row
+                    firstWordIndex[1] = column
+                }
+            }
+            
+            
+            
+            
+            return [[lastWordIndex[0] + 1, lastWordIndex[1] - 1], [firstWordIndex[0] - 1, firstWordIndex[1] + 1] ]
+        }
+       //Diagonal right
+        else{
+            
+     
+            if(row == firstWordIndex[0] - 1 && column == firstWordIndex[1] - 1) {
+                if (inRange(vari: firstWordIndex[0] - 1) && inRange(vari: firstWordIndex[1] - 1)) {
+                    firstWordIndex[0] = row
+                    firstWordIndex[1] = column
+                    print("To the left and up")
+                    print("PLS")
+                }
+            }
+            
+            if (row == lastWordIndex[0] + 1 && column == lastWordIndex[1]+1) {
+                if (inRange(vari: lastWordIndex[0]+1) && inRange(vari: lastWordIndex[1]+1)) {
+                    lastWordIndex[0] = row
+                    lastWordIndex[1] = column
+                }
+            }
+            
+            return [ [lastWordIndex[0] + 1, lastWordIndex[1] + 1] , [firstWordIndex[0] - 1, firstWordIndex[1] - 1 ]]
+        }
+    }
+    
+    // A red "strikethough" line appears over the word labels as they are found in the word search
     func foundWords() {
         if selectedWord == "JAVA" {
             javaLabel.attributedText = selectedWord.strikeThrough()
@@ -120,6 +318,7 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
         }
     }
     
+    // Update the "Found" score as words are found
     func updateScore() {
         score += 1
         scoreLabel.text = String(score)
