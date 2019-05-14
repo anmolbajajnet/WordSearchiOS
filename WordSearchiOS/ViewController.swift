@@ -126,7 +126,7 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
                 selectedWord = words[indexPath.section][indexPath.item] + selectedWord
             } else { // Otherwise, the last word is being updated and should be appended to the string.
                 selectedWord.append(words[indexPath.section][indexPath.item])
-            }          
+            }
   
   
             print("Selected words")
@@ -136,7 +136,7 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
             print("possible word selections")
             print(possibleWordSelections)
             
-        }  else if (currentWordPosition[0] == lastWordIndex[0] && currentWordPosition[1] == lastWordIndex[1])  {
+        }  else if ((currentWordPosition[0] == lastWordIndex[0] && currentWordPosition[1] == lastWordIndex[1]))  {
             cell.backgroundColor = unselectedColor
             if selectedWord.count > 1 {
                 selectedWord.removeLast()
@@ -153,7 +153,6 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
                     lastWordIndex = [lastWordIndex[0],lastWordIndex[1]-1]
                 }
                 possibleWordSelections = nextDirection(row: lastWordIndex[0], column: lastWordIndex[1], lenOfWord: selectedWord.count+1)
-            
             }
             // No word is selected. Reset all values.
             else {
@@ -171,7 +170,38 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
                 southWest = false
                 selectedDir = -1
             }
+        } else if (currentWordPosition[0] == firstWordIndex[0] && currentWordPosition[1] == firstWordIndex[1]) {
+            cell.backgroundColor = unselectedColor
+            if selectedWord.count > 1 {
+                selectedWord.removeFirst()
+                if north {
+                    firstWordIndex = [firstWordIndex[0]+1, firstWordIndex[1]]
+                } else if northWest {
+                    firstWordIndex = [firstWordIndex[0]+1, firstWordIndex[1]+1]
+                } else if west {
+                    firstWordIndex = [firstWordIndex[0], firstWordIndex[1]+1]
+                } else if southWest{
+                    firstWordIndex = [firstWordIndex[0]-1, firstWordIndex[1]+1]
+                }
+                possibleWordSelections = nextDirection(row: firstWordIndex[0], column: firstWordIndex[1], lenOfWord: selectedWord.count+1)
+                print("Selected words after first removal")
+                print(selectedWord)
+        } else {
+            selectedWord.removeAll()
+            firstWordIndex = [0,0]
+            lastWordIndex = [0,0]
+            possibleWordSelections.removeAll()
+            north = false
+            west = false
+            south = false
+            east = false
+            northWest = false
+            northEast = false
+            southEast = false
+            southWest = false
+            selectedDir = -1
         }
+    }
         // Check if the selected word on the grid matches one of the target words
         for i in targetWords{
             if selectedWord == i {
