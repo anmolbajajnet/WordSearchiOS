@@ -35,7 +35,6 @@ class ViewController: UIViewController {
     var firstWordIndex:[Int] = []
     var lastWordIndex:[Int] = []
     var possibleWordSelections: [[Int]] = [[]]
-    var selectionArray: [[Int]] = [[]]
     
 
     
@@ -106,32 +105,8 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
         print("first word index is")
         print(firstWordIndex)
         
-        // Fix Direction
-        
-       
-        if selectedWord.count == 1 {
-            //Horizontal
-            if (firstWordIndex[0] == currentWordPosition[0]){
-                selectedDir = 1
-            }
-            //Verticle
-            else if(firstWordIndex[1] == currentWordPosition[1]){
-                selectedDir = 2
-            }
-            //Diagonal Left
-            else if(currentWordPosition[0] == firstWordIndex[0] + 1 && currentWordPosition[1] == firstWordIndex[1] - 1){
-                selectedDir = 4
-            }
-            //Diagonal Right
-            else{
-                selectedDir = 3
-            }
-            
-            lastWordIndex.insert(currentWordPosition[0], at: 0)
-            lastWordIndex.insert(currentWordPosition[1], at: 1)
-            
-        }
-//        lastWordIndex = [currentWordPosition[0],currentWordPosition[1]]
+        // Determine the direction after looking at first two selections
+        setDirection(row: currentWordPosition[0], column: currentWordPosition[1])
         
         print("Last word is")
         print(lastWordIndex)
@@ -142,9 +117,7 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
         if (selectedWord.isEmpty || possibleToSelect(availableToSelect: possibleWordSelections, row: currentWordPosition[0], column: currentWordPosition[1])) {
             cell.backgroundColor = selectedColor
             selectedWord.append(words[indexPath.section][indexPath.item])
-     
-
-                
+    
         
             possibleWordSelections = nextDirection(row: indexPath.section, column: indexPath.item, lenOfWord: selectedWord.count+1)
             print("possible word selections")
@@ -183,6 +156,7 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
         }
     }
     
+
     func possibleToSelect(availableToSelect: [[Int]], row: Int, column: Int) -> Bool {
         for i in availableToSelect {
             if i[0] ==  row && i[1] == column {
@@ -201,14 +175,12 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     
     func nextDirection(row: Int,column: Int, lenOfWord: Int) -> [[Int]] {
         
-        
-        
-        
         if (selectedDir < 1 ) {
             return [[row-1,column-1],[row-1,column],[row-1,column+1],[row,column-1],[row,column+1],[row+1,column-1],[row+1,column],[row+1,column+1]]
         }
+        // Word direction is horizontal
         else if(selectedDir == 1){
-            
+             // If the current word is in East, update 'fastWordIndex'
             if (column == lastWordIndex[1] + 1 && row == lastWordIndex[0]) {
                 if (inRange(vari: lastWordIndex[1] + 1)) {
                     lastWordIndex[0] = row
@@ -218,7 +190,7 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
                     print(lastWordIndex)
                 }
             }
-            
+            // if the current word is in West, update 'firstWordIndex'
             if (column == firstWordIndex[1] - 1 && row == firstWordIndex[0]) {
                 if (inRange(vari: firstWordIndex[1] - 1)) {
                     firstWordIndex[0] = row;
@@ -227,13 +199,12 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
                     print("PLS")
                 }
             }
-
-            
-            
+            // Return possible moves in the next select
             return [ [lastWordIndex[0], lastWordIndex[1] + 1 ], [firstWordIndex[0], firstWordIndex[1] - 1] ]
         }
+        // Word direction is verticle
         else if(selectedDir == 2){
-            
+            // If word current word is in North, update 'firstWordIndex'
             if(row == firstWordIndex[0] - 1 && column == firstWordIndex[1]){
                 if (inRange(vari: firstWordIndex[0] - 1)) {
                     firstWordIndex[0] = row
@@ -242,7 +213,7 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
                     print("PLS")
                 }
             }
-            
+            // If the current word is in South, update 'lastWordIndex'
             if (row == lastWordIndex[0] + 1 && column == lastWordIndex[1]) {
                 if inRange(vari: lastWordIndex[0] + 1) {
                     lastWordIndex[0] = row
@@ -251,36 +222,31 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
                     print("PLS")
                 }
             }
-            
-            
+            // Return possible moves in the next select
             return [ [lastWordIndex[0] + 1, lastWordIndex[1]] , [firstWordIndex[0] - 1, firstWordIndex[1]] ]
         }
+        // Word direction is Diagonal Left
         else if (selectedDir == 4 ){
-            
-            
+            // If the current word is in South West, update 'lastWordIndex'
             if (row == lastWordIndex[0]+1 && column == lastWordIndex[1]-1) {
                 if (inRange(vari: lastWordIndex[0]+1) && inRange(vari: lastWordIndex[1]-1)){
                     lastWordIndex[0] = row
                     lastWordIndex[1] = column
                 }
             }
-            
+            // if the current word is in North East, update 'firstWordIndex'
             if (row == firstWordIndex[0]-1 && column == firstWordIndex[1]+1) {
                 if (inRange(vari: firstWordIndex[0]-1) && inRange(vari: firstWordIndex[1]+1)){
                     firstWordIndex[0] = row
                     firstWordIndex[1] = column
                 }
             }
-            
-            
-            
-            
+            // Return possible moves in the next select
             return [[lastWordIndex[0] + 1, lastWordIndex[1] - 1], [firstWordIndex[0] - 1, firstWordIndex[1] + 1] ]
         }
-       //Diagonal right
+        // Word direction is Diagonal Right
         else{
-            
-     
+            // if the current word is in South East, update 'firstWordIndex'
             if(row == firstWordIndex[0] - 1 && column == firstWordIndex[1] - 1) {
                 if (inRange(vari: firstWordIndex[0] - 1) && inRange(vari: firstWordIndex[1] - 1)) {
                     firstWordIndex[0] = row
@@ -289,14 +255,14 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
                     print("PLS")
                 }
             }
-            
+            // If the current word is in South East, update 'lastWordIndex'
             if (row == lastWordIndex[0] + 1 && column == lastWordIndex[1]+1) {
                 if (inRange(vari: lastWordIndex[0]+1) && inRange(vari: lastWordIndex[1]+1)) {
                     lastWordIndex[0] = row
                     lastWordIndex[1] = column
                 }
             }
-            
+            // Return possible moves in the next select
             return [ [lastWordIndex[0] + 1, lastWordIndex[1] + 1] , [firstWordIndex[0] - 1, firstWordIndex[1] - 1 ]]
         }
     }
@@ -323,6 +289,31 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
         score += 1
         scoreLabel.text = String(score)
     }
+    
+    func setDirection(row: Int, column: Int) {
+        if selectedWord.count == 1 {
+            //Horizontal
+            if (firstWordIndex[0] == row){
+                selectedDir = 1
+            }
+                //Verticle
+            else if(firstWordIndex[1] == column){
+                selectedDir = 2
+            }
+                //Diagonal Left
+            else if(row == firstWordIndex[0] + 1 && column == firstWordIndex[1] - 1){
+                selectedDir = 4
+            }
+                //Diagonal Right
+            else{
+                selectedDir = 3
+            }
+            lastWordIndex.insert(row, at: 0)
+            lastWordIndex.insert(column, at: 1)
+            
+        }
+    }
+    
 }
     
 
