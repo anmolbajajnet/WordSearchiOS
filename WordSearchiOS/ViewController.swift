@@ -20,20 +20,32 @@ class ViewController: UIViewController {
     @IBOutlet weak var swiftLabel: UILabel!
     var score = 0
     
+    @IBAction func startNewGame(_ sender: UIButton) {
+        refreshGrid()
+        score = 0
+        scoreLabel.text = String(score)
+        wordCollectionView.reloadData()
+    }
+    
+    
     // Hardcoded grid of values
     
-    let  words = [["Q","A","S","J","X","V","J","F","Z","C"],
-                 ["W","W","E","G","C","J","J","Q","E", "D"],
-                 ["D","B","E","K","C","R","H","V","A","X"],
-                 ["M","N","Q","L","O","S","I","U","V","M"],
-                 ["G","L","R","V","W","T","M","D","J","O"],
-                 ["R","N","P","I","C","U","L","I","Z","B"],
-                 ["Z","L","F","E","C","S","G","I","O","I"],
-                 ["F","T","J","A","V","A","J","F","N","L"],
-                 ["C","B","V","A","R","I","A","B","L","E"],
-                 ["O","E","F","V","X","B","U","S","K","E"]]
+    var  words : [[String]]  = [["Q","A","S","J","X","V","J","F","Z","C","A"],
+                                ["W","W","E","G","C","J","J","Q","E", "D","D"],
+                                ["D","B","E","K","C","R","H","V","A","X","G"],
+                                ["M","N","Q","L","O","S","I","U","V","M","E"],
+                                ["G","L","R","V","W","T","M","D","J","O","L"],
+                                ["R","N","P","I","C","U","L","I","Z","B","O"],
+                                ["Z","L","F","E","C","S","G","I","O","I","Q"],
+                                ["F","T","J","A","V","A","J","F","N","L","K"],
+                                ["C","B","V","A","R","I","A","B","L","E","E"],
+                                ["O","E","F","V","X","B","U","S","K","E","L"],
+                                ["O","E","F","V","X","B","U","S","K","E","W"]]
     
-    let targetWords = ["KOTLIN", "JAVA","VARIABLE","OBJECTIVEC","MOBILE", "SWIFT"]
+    let targetWords = ["KOTLIN", "JAVA", "SWIFT", "MOBILE", "VARIABLE", "OBJECTIVEC"]
+    var totalRows = 10
+    var totalColumns = 10
+
     var selectedWord = ""
     var selectedDir = -1
     var firstWordIndex:[Int] = [0,0]
@@ -54,10 +66,10 @@ class ViewController: UIViewController {
     
     /*ItemsPerRow variable is used in the UICollectionViewDelegateFlowLayout extension to
       set the number of items in a row in any screen size.
-      Currently set to 10 for a 10x10 matrix
+      Currently set to 11 for a 11x11 matrix
      Tested for: iPhone XR, iPhone 8, iPhone 5S.
      */
-    private let itemsPerRow: CGFloat = 10
+    private let itemsPerRow: CGFloat = 11
     private let sectionInsets = UIEdgeInsets(top: 0,
                                              left:0,
                                              bottom: 0,
@@ -74,6 +86,87 @@ class ViewController: UIViewController {
         wordCollectionView.delegate = self
         wordCollectionView.dataSource = self
     }
+    
+    // Generate random alphabet
+    func randomString(length: Int) -> String {
+        let letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        return String((0..<length).map{ _ in letters.randomElement()! })
+    }
+    // Create a new grid with random alphabets
+    func createGrid() -> [[String]] {
+        for row in 0...10{
+            for column in 0...10 {
+                words[row][column] = randomString(length: 1)
+            }
+        }
+        print(words.forEach{print($0, terminator:"\n")})
+        return words
+    }
+    
+    
+    // Generate a list of target words with some of them in reverse order
+    func randomizeTargetWords(targetWords: [String]) -> [String] {
+        var wordOrReverse: [String] = []
+        var zeroOrOne = 0
+        for word in targetWords{
+            zeroOrOne = Int.random(in: 0...1)
+            if zeroOrOne == 0 {
+                wordOrReverse.append(word)
+            } else {
+                wordOrReverse.append(String(word.reversed()))
+            }
+        }
+        print(wordOrReverse)
+        return wordOrReverse
+    }
+    
+    func refreshGrid() {
+        createGrid()
+        let randomizedWords = randomizeTargetWords(targetWords: targetWords)
+        // [0,1] -> Word is placed vertically
+        // [1,0] -> Word is placed horizontaly
+        // [1,1] -> Word is placed diagonally
+        let  directionOptions = [[0,1],[1,0],[1,1]]
+        var direction: [Int] = []
+        for randomWord in randomizedWords {
+            // Choose the direction randomly from avilable directions
+            direction = directionOptions[Int.random(in: 0...2)]
+            print(direction)
+            // Determine the placement on the grid
+            var maxColumnPlacement = totalColumns
+            var maxRowPlacement = totalRows
+            
+            // When the word needs to be placed vertically, the max column placement will be the number of columns
+            if direction[0] == 0 {
+                maxColumnPlacement = totalColumns
+            } else { // Word to be placed horizonally or diagonally
+                maxColumnPlacement = totalColumns - randomWord.count
+            }
+            // Determine maxRowPlacement
+            if direction[1] == 0 {
+                maxRowPlacement = totalRows
+            } else {
+                maxRowPlacement = totalRows - randomWord.count
+            }
+            
+            print(maxRowPlacement)
+            print(maxColumnPlacement)
+            
+            // Determine the row and column to place the word
+            var row = Int.random(in: 0...maxRowPlacement)
+            var column = Int.random(in: 0...maxColumnPlacement)
+            
+            for i in 0..<randomWord.count {
+                print(randomWord)
+                var wordStrToArray = Array(randomWord)
+                words[row + direction[1]*i][column + direction[0]*i] = String(wordStrToArray[i])
+            }
+            
+            print("Word \(randomWord) is at \(row) \(column)")
+            
+        }
+    }
+    
 }
 
 extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
@@ -98,17 +191,16 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
         let cell = wordCollectionView.cellForItem(at: indexPath) as! WordCollectionViewCell
         let unselectedColor = UIColor.white
         let selectedColor = UIColor.green
-
         var currentWordPosition = [indexPath.section,indexPath.item]
-        print("Current Word Position Is")
-        print(currentWordPosition)
-        print(selectedWord)
-        print("count of selected word is")
-        print(selectedWord.count)
         if selectedWord.isEmpty {
             firstWordIndex = [indexPath.section, indexPath.item]
+            lastWordIndex = [indexPath.section, indexPath.item]
         }
  
+        print("First Word Initial")
+        print(firstWordIndex)
+        print("Last Word Initial")
+        print(lastWordIndex)
         
         // Determine the direction after looking at first two selections
         setDirection(row: currentWordPosition[0], column: currentWordPosition[1])
@@ -119,8 +211,7 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
         // Check if the word being added can be added (Follows the word search logic of Horizonal, Verticle, or Diagonal selections)
         if (selectedWord.isEmpty || possibleToSelect(availableToSelect: possibleWordSelections, row: currentWordPosition[0], column:
             currentWordPosition[1])) {
-            cell.backgroundColor = selectedColor
-            
+            cell.backgroundColor = selectedColor //Initalize selected color to green
             // Check if the first word index is being updated. Prepend the value.
             if (currentWordPosition[0] == firstWordIndex[0]-1 || (currentWordPosition[0] == firstWordIndex[0]-1 && currentWordPosition[1] == firstWordIndex[0]-1) || (currentWordPosition[0]==firstWordIndex[0] && currentWordPosition[1]==firstWordIndex[1]-1) || currentWordPosition[0] == firstWordIndex[0] + 1 && currentWordPosition[1]==firstWordIndex[1]-1) {
                 selectedWord = words[indexPath.section][indexPath.item] + selectedWord
@@ -128,15 +219,16 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
                 selectedWord.append(words[indexPath.section][indexPath.item])
             }
   
-  
             print("Selected words")
             print(selectedWord)
             
             possibleWordSelections = nextDirection(row: indexPath.section, column: indexPath.item, lenOfWord: selectedWord.count+1)
-            print("possible word selections")
+            print("Possible word selections")
             print(possibleWordSelections)
             
-        }  else if ((currentWordPosition[0] == lastWordIndex[0] && currentWordPosition[1] == lastWordIndex[1]))  {
+        }
+        // Already selected cell is selected again. Deselect the  cell.
+        else if ((currentWordPosition[0] == lastWordIndex[0] && currentWordPosition[1] == lastWordIndex[1]))  {
             cell.backgroundColor = unselectedColor
             if selectedWord.count > 1 {
                 selectedWord.removeLast()
@@ -172,10 +264,19 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
             }
         } else if (currentWordPosition[0] == firstWordIndex[0] && currentWordPosition[1] == firstWordIndex[1]) {
             cell.backgroundColor = unselectedColor
+            
+            print("Current word position")
+            print(currentWordPosition)
+            print("First Word Index")
+            print(firstWordIndex)
+            
             if selectedWord.count > 1 {
+                print("Selected words after before removal")
+                print(selectedWord)
                 selectedWord.removeFirst()
                 if north {
                     firstWordIndex = [firstWordIndex[0]+1, firstWordIndex[1]]
+                    print("its north")
                 } else if northWest {
                     firstWordIndex = [firstWordIndex[0]+1, firstWordIndex[1]+1]
                 } else if west {
@@ -228,7 +329,7 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     
     
     func inRange(vari: Int)->Bool{
-        if ( vari >= 0 && vari <= 9){
+        if ( vari >= 0 && vari <= 10){
             return true
         }
         return false
@@ -248,8 +349,6 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
                     lastWordIndex[0] = row
                     lastWordIndex[1] = column
                     east = true // checked
-                    print("Last row to the right")
-                    print("PLS")
                     print(lastWordIndex)
                 }
             }
@@ -259,8 +358,6 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
                     firstWordIndex[0] = row;
                     firstWordIndex[1] = column;
                     west = true
-                    print("To the left of current column")
-                    print("PLS")
                 }
             }
             // Return possible moves in the next select
@@ -274,8 +371,6 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
                     firstWordIndex[0] = row
                     firstWordIndex[1] = column
                     north = true
-                    print("Above current culumn")
-                    print("PLS")
                 }
             }
             // If the current word is in South, update 'lastWordIndex'
@@ -284,8 +379,6 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
                     lastWordIndex[0] = row
                     lastWordIndex[1] = column
                     south = true
-                    print("To the bottom")
-                    print("PLS")
                 }
             }
             // Return possible moves in the next select
@@ -379,7 +472,7 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
                 selectedDir = 4
             }
             lastWordIndex = [row,column]
-            
+
         }
     }
     
