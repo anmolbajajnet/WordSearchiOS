@@ -25,11 +25,11 @@ class ViewController: UIViewController {
         score = 0
         scoreLabel.text = String(score)
         wordCollectionView.reloadData()
+        resetLabelText()
     }
     
     
     // Hardcoded grid of values
-    
     var  words : [[String]]  = [["Q","A","S","J","X","V","J","F","Z","C","A"],
                                 ["W","W","E","G","C","J","J","Q","E", "D","D"],
                                 ["D","B","E","K","C","R","H","V","A","X","G"],
@@ -43,22 +43,18 @@ class ViewController: UIViewController {
                                 ["O","E","F","V","X","B","U","S","K","E","W"]]
     
     let targetWords = ["KOTLIN", "JAVA", "SWIFT", "MOBILE", "VARIABLE", "OBJECTIVEC"]
-    var totalRows = 10
-    var totalColumns = 10
+    let totalRows = 10
+    let totalColumns = 10
 
     var selectedWord = ""
     var selectedDir = -1
-    var firstWordIndex:[Int] = [0,0]
-    var lastWordIndex:[Int] = [0,0]
+    var firstWordIndex:[Int] = []
+    var lastWordIndex:[Int] = []
     var possibleWordSelections: [[Int]] = [[]]
-    var north = false
-    var west = false
-    var south = false
-    var east = false
-    var northWest = false
-    var northEast = false
-    var southEast = false
-    var southWest = false
+    
+
+    var wordSelectionArray = [[Int]]()
+    var lastElement = [Int]()
 
     
     @IBOutlet weak var wordCollectionView: UICollectionView!
@@ -121,7 +117,8 @@ class ViewController: UIViewController {
     }
     
     func refreshGrid() {
-        createGrid()
+        // Change the hardcoded "words" matrix to a randomly generated matrix
+        createGrid() // Change the "Words" 2D Array into a newly generated Array
         let randomizedWords = randomizeTargetWords(targetWords: targetWords)
         // [0,1] -> Word is placed vertically
         // [1,0] -> Word is placed horizontaly
@@ -161,7 +158,6 @@ class ViewController: UIViewController {
                 var wordStrToArray = Array(randomWord)
                 words[row + direction[1]*i][column + direction[0]*i] = String(wordStrToArray[i])
             }
-            
             print("Word \(randomWord) is at \(row) \(column)")
             
         }
@@ -183,6 +179,7 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
         let cell = wordCollectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as! WordCollectionViewCell
         cell.wordLabel.text = words[indexPath.section][indexPath.item]
         cell.wordLabel.textAlignment = NSTextAlignment.center;
+        cell.backgroundColor = UIColor.white
         return cell
     }
     
@@ -194,7 +191,6 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
         var currentWordPosition = [indexPath.section,indexPath.item]
         if selectedWord.isEmpty {
             firstWordIndex = [indexPath.section, indexPath.item]
-            lastWordIndex = [indexPath.section, indexPath.item]
         }
  
         print("First Word Initial")
@@ -209,237 +205,147 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
         print(selectedDir)
 
         // Check if the word being added can be added (Follows the word search logic of Horizonal, Verticle, or Diagonal selections)
-        if (selectedWord.isEmpty || possibleToSelect(availableToSelect: possibleWordSelections, row: currentWordPosition[0], column:
-            currentWordPosition[1])) {
+        if (selectedWord.isEmpty || possibleToSelect(availableToSelect: possibleWordSelections, row: indexPath.section, column: indexPath.item)) {
             cell.backgroundColor = selectedColor //Initalize selected color to green
-            // Check if the first word index is being updated. Prepend the value.
-            if (currentWordPosition[0] == firstWordIndex[0]-1 || (currentWordPosition[0] == firstWordIndex[0]-1 && currentWordPosition[1] == firstWordIndex[0]-1) || (currentWordPosition[0]==firstWordIndex[0] && currentWordPosition[1]==firstWordIndex[1]-1) || currentWordPosition[0] == firstWordIndex[0] + 1 && currentWordPosition[1]==firstWordIndex[1]-1) {
-                selectedWord = words[indexPath.section][indexPath.item] + selectedWord
-            } else { // Otherwise, the last word is being updated and should be appended to the string.
-                selectedWord.append(words[indexPath.section][indexPath.item])
-            }
-  
+            selectedWord.append(words[indexPath.section][indexPath.item])
+            wordSelectionArray.append([currentWordPosition[0],currentWordPosition[1]])
             print("Selected words")
             print(selectedWord)
+            print("Selected Array")
+            print(wordSelectionArray)
+            if wordSelectionArray.count > 0 {
+                lastElement = wordSelectionArray.last!
+            }
+            print("Last Element")
+            print(lastElement)
             
-            possibleWordSelections = nextDirection(row: indexPath.section, column: indexPath.item, lenOfWord: selectedWord.count+1)
+            possibleWordSelections = nextDirectionNew(row: indexPath.section, column: indexPath.item)
+
             print("Possible word selections")
             print(possibleWordSelections)
-            
         }
-        // Already selected cell is selected again. Deselect the  cell.
-        else if ((currentWordPosition[0] == lastWordIndex[0] && currentWordPosition[1] == lastWordIndex[1]))  {
+        // Already selected cell is selected again. Deselect the cell.
+        else if ((currentWordPosition[0] == lastElement[0] && currentWordPosition[1] == lastElement[1]))  {
             cell.backgroundColor = unselectedColor
             if selectedWord.count > 1 {
                 selectedWord.removeLast()
-                // update last word
-                if east {
-                    lastWordIndex = [lastWordIndex[0], lastWordIndex[1]-1]
-                } else if south {
-                    lastWordIndex = [lastWordIndex[0]-1, lastWordIndex[1]]
-                } else if southEast {
-                    lastWordIndex = [lastWordIndex[0]-1, lastWordIndex[1]-1]
-                } else if northEast {
-                    lastWordIndex = [lastWordIndex[0]+1, lastWordIndex[1]-1]
-                } else if east {
-                    lastWordIndex = [lastWordIndex[0],lastWordIndex[1]-1]
-                }
-                possibleWordSelections = nextDirection(row: lastWordIndex[0], column: lastWordIndex[1], lenOfWord: selectedWord.count+1)
+                wordSelectionArray.removeLast()
+                print(selectedWord)
+                lastElement = wordSelectionArray.last!
+                print("Last Element Is")
+                print(lastElement)
+                possibleWordSelections = nextDirectionNew(row: lastElement[0], column: lastElement[1])
             }
-            // No word is selected. Reset all values.
+        // The only selected alphabet on grid is being deselected. Reset all values.
             else {
-                selectedWord.removeAll()
-                firstWordIndex = [0,0]
-                lastWordIndex = [0,0]
-                possibleWordSelections.removeAll()
-                north = false
-                west = false
-                south = false
-                east = false
-                northWest = false
-                northEast = false
-                southEast = false
-                southWest = false
-                selectedDir = -1
+                refreshValues()
             }
-        } else if (currentWordPosition[0] == firstWordIndex[0] && currentWordPosition[1] == firstWordIndex[1]) {
-            cell.backgroundColor = unselectedColor
-            
-            print("Current word position")
-            print(currentWordPosition)
-            print("First Word Index")
-            print(firstWordIndex)
-            
-            if selectedWord.count > 1 {
-                print("Selected words after before removal")
-                print(selectedWord)
-                selectedWord.removeFirst()
-                if north {
-                    firstWordIndex = [firstWordIndex[0]+1, firstWordIndex[1]]
-                    print("its north")
-                } else if northWest {
-                    firstWordIndex = [firstWordIndex[0]+1, firstWordIndex[1]+1]
-                } else if west {
-                    firstWordIndex = [firstWordIndex[0], firstWordIndex[1]+1]
-                } else if southWest{
-                    firstWordIndex = [firstWordIndex[0]-1, firstWordIndex[1]+1]
-                }
-                possibleWordSelections = nextDirection(row: firstWordIndex[0], column: firstWordIndex[1], lenOfWord: selectedWord.count+1)
-                print("Selected words after first removal")
-                print(selectedWord)
-        } else {
-            selectedWord.removeAll()
-            firstWordIndex = [0,0]
-            lastWordIndex = [0,0]
-            possibleWordSelections.removeAll()
-            north = false
-            west = false
-            south = false
-            east = false
-            northWest = false
-            northEast = false
-            southEast = false
-            southWest = false
-            selectedDir = -1
         }
-    }
+
         // Check if the selected word on the grid matches one of the target words
         for i in targetWords{
             if selectedWord == i {
-                print("YESS")
                 updateScore()
                 foundWords()
-                selectedWord.removeAll()
-                firstWordIndex.removeAll()
-                lastWordIndex.removeAll()
-                selectedDir = -1
+                refreshValues()
             }
         }
     }
+    
+    // Use when one word found or a word is completely deselected
+    func refreshValues() {
+        selectedWord.removeAll()
+        firstWordIndex.removeAll()
+        lastWordIndex.removeAll()
+        possibleWordSelections.removeAll()
+        wordSelectionArray.removeAll()
+        selectedDir = -1
+    }
+    
     
     // Determine if it is possible to select the word being selected
     func possibleToSelect(availableToSelect: [[Int]], row: Int, column: Int) -> Bool {
-        for i in availableToSelect {
-            if i[0] ==  row && i[1] == column {
-                return true
+        print("Available to select count is")
+        print(availableToSelect.count)
+        print(availableToSelect)
+        if availableToSelect.count >= 1{
+            for i in availableToSelect {
+                print(i)
+                if ((i[0] ==  row) && (i[1] == column)) {
+                    return true
+                 }
             }
+            return false
         }
         return false
     }
     
-    
-    func inRange(vari: Int)->Bool{
-        if ( vari >= 0 && vari <= 10){
-            return true
-        }
-        return false
-    }
-    
-    // Return possible directions a user can select
-    func nextDirection(row: Int,column: Int, lenOfWord: Int) -> [[Int]] {
-        // First word being selected. Return 8 possible outcomes.
+    func nextDirectionNew(row: Int,column: Int) -> [[Int]] {
         if (selectedDir < 1 ) {
             return [[row-1,column-1],[row-1,column],[row-1,column+1],[row,column-1],[row,column+1],[row+1,column-1],[row+1,column],[row+1,column+1]]
         }
-        // Word direction is horizontal
+            // Word direction is horizontal
         else if(selectedDir == 1){
-             // If the current word is in East, update 'lastWordIndex'
-            if (column == lastWordIndex[1] + 1 && row == lastWordIndex[0]) {
-                if (inRange(vari: lastWordIndex[1] + 1)) {
-                    lastWordIndex[0] = row
-                    lastWordIndex[1] = column
-                    east = true // checked
-                    print(lastWordIndex)
-                }
+            // If the current word is in East
+            if ((column == lastElement[0] + 1 && row == lastElement[0]) || firstWordIndex[1]+1 == lastWordIndex[1] ) {
+                return [ [lastElement[0], lastElement[1] + 1] ]
             }
-            // if the current word is in West, update 'firstWordIndex'
-            if (column == firstWordIndex[1] - 1 && row == firstWordIndex[0]) {
-                if (inRange(vari: firstWordIndex[1] - 1)) {
-                    firstWordIndex[0] = row;
-                    firstWordIndex[1] = column;
-                    west = true
-                }
+            // Direction of current word is West
+            if (column == lastElement[1] - 1 && row == lastElement[0] || (firstWordIndex[1]-1 == lastWordIndex[1])) {
+                return [ [lastElement[0], lastElement[1] - 1] ]
             }
-            // Return possible moves in the next select
-            return [ [lastWordIndex[0], lastWordIndex[1] + 1 ], [firstWordIndex[0], firstWordIndex[1] - 1] ]
+            
         }
         // Word direction is verticle
         else if(selectedDir == 2){
-            // If word current word is in North, update 'firstWordIndex'
-            if(row == firstWordIndex[0] - 1 && column == firstWordIndex[1]){
-                if (inRange(vari: firstWordIndex[0] - 1)) {
-                    firstWordIndex[0] = row
-                    firstWordIndex[1] = column
-                    north = true
-                }
+            // Direction of current word is South
+            if (row == lastElement[0] + 1 && column == lastElement[0] || (firstWordIndex[0] == lastWordIndex[0]-1)) {
+                return [ [lastElement[0] + 1, lastElement[1]] ]
             }
-            // If the current word is in South, update 'lastWordIndex'
-            if (row == lastWordIndex[0] + 1 && column == lastWordIndex[1]) {
-                if inRange(vari: lastWordIndex[0] + 1) {
-                    lastWordIndex[0] = row
-                    lastWordIndex[1] = column
-                    south = true
-                }
+            // Direction of current word is North
+            else if (row == lastElement[0] - 1 && column == lastElement[0] || (firstWordIndex[0] == lastWordIndex[0]+1)) {
+                return [ [lastElement[0] - 1, lastElement[1]] ]
             }
-            // Return possible moves in the next select
-            return [ [lastWordIndex[0] + 1, lastWordIndex[1]] , [firstWordIndex[0] - 1, firstWordIndex[1]] ]
         }
         // Word direction is Diagonal Left
         else if (selectedDir == 3 ){
-            // If the current word is in North East, update 'lastWordIndex'
-            if (row == lastWordIndex[0]-1 && column == lastWordIndex[1]+1) {
-                if (inRange(vari: lastWordIndex[0]-1) && inRange(vari: lastWordIndex[1]+1)){
-                    lastWordIndex[0] = row
-                    lastWordIndex[1] = column
-                    northEast = true
-                }
+            // Direction of current word is North East
+            if (row == lastElement[0]-1 && column == lastElement[0]+1 || (firstWordIndex[0] == lastWordIndex[0]+1 && firstWordIndex[1]==lastWordIndex[1]-1)) {
+                return [ [lastElement[0] - 1, lastElement[1] + 1] ]
             }
-            // if the current word is in North West, update 'firstWordIndex'
-            if (row == firstWordIndex[0]+1 && column == firstWordIndex[1]-1) {
-                if (inRange(vari: firstWordIndex[0]+1) && inRange(vari: firstWordIndex[1]-1)){
-                    firstWordIndex[0] = row
-                    firstWordIndex[1] = column
-                    southWest = true
-                }
+            // Direction of current word is South West
+            else if (row == lastElement[0]+1 && column == lastElement[1]-1 || (firstWordIndex[0] == lastWordIndex[0]-1 && firstWordIndex[1]==lastWordIndex[1]+1)) {
+                return [[lastElement[0] + 1, lastElement[1] - 1]]
             }
-            // Return possible moves in the next select
-            return [[lastWordIndex[0] - 1, lastWordIndex[1] + 1], [firstWordIndex[0] + 1, firstWordIndex[1] - 1] ]
         }
         // Word direction is Diagonal Right
-        else if (selectedDir == 4){
-            // if the current word is in North West, update 'firstWordIndex'
-            if(row == firstWordIndex[0] - 1 && column == firstWordIndex[1] - 1) {
-                if (inRange(vari: firstWordIndex[0] - 1) && inRange(vari: firstWordIndex[1] - 1)) {
-                    firstWordIndex[0] = row
-                    firstWordIndex[1] = column
-                    northWest = true
+            else if (selectedDir == 4 ){
+                // Direction of current word is in South East
+                if (row == lastElement[0] + 1 && column == lastElement[1]+1 || (firstWordIndex[0] == lastWordIndex[0]-1 && firstWordIndex[1]==lastWordIndex[1]-1)) {
+                    return  [[lastElement[0] + 1, lastElement[1] + 1] ]
+                }
+                // Direction of current word is in North West
+                if (row == lastElement[0] - 1 && column == lastElement[1]-1  || (firstWordIndex[0] == lastWordIndex[0]+1 && firstWordIndex[1]==lastWordIndex[1]+1)) {
+                    return [ [lastElement[0] - 1, lastElement[1] - 1] ]
                 }
             }
-            // If the current word is in South East, update 'lastWordIndex'
-            if (row == lastWordIndex[0] + 1 && column == lastWordIndex[1]+1) {
-                if (inRange(vari: lastWordIndex[0]+1) && inRange(vari: lastWordIndex[1]+1)) {
-                    lastWordIndex[0] = row
-                    lastWordIndex[1] = column
-                    southEast = true
-                }
-            }
-            // Return possible moves in the next select
-            return [ [lastWordIndex[0] + 1, lastWordIndex[1] + 1] , [firstWordIndex[0] - 1, firstWordIndex[1] - 1 ]]
-        }
-        return [[]]
+            return [[]]
     }
+ 
+
     
+
     // A red "strikethough" line appears over the word labels as they are found in the word search
     func foundWords() {
         if (selectedWord == "JAVA" ) {
             javaLabel.attributedText = selectedWord.strikeThrough()
-        } else if selectedWord == "SWIFT" {
+        } else if (selectedWord == "SWIFT") {
             swiftLabel.attributedText = selectedWord.strikeThrough()
         } else if selectedWord == "VARIABLE"{
             variableLabel.attributedText = selectedWord.strikeThrough()
         } else if selectedWord == "KOTLIN" {
             kotlinLabel.attributedText = selectedWord.strikeThrough()
-        } else if selectedWord == "OBJECTIVEC" {
+        } else if (selectedWord == "OBJECTIVEC") {
             objectiveCLabel.attributedText = selectedWord.strikeThrough()
         } else if selectedWord == "MOBILE" {
             mobileLabel.attributedText = selectedWord.strikeThrough()
@@ -450,6 +356,16 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     func updateScore() {
         score += 1
         scoreLabel.text = String(score)
+    }
+    
+    // Used when a new game is started
+    func resetLabelText() {
+        javaLabel.text = "Java"
+        variableLabel.text = "Variable"
+        kotlinLabel.text = "Kotlin"
+        objectiveCLabel.text = "ObjectiveC"
+        mobileLabel.text = "Mobile"
+        swiftLabel.text = "Swift"
     }
     
     // Direction can only be set after the user has made atleast 2 selections on the grid
@@ -471,8 +387,9 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource {
             else{
                 selectedDir = 4
             }
-            lastWordIndex = [row,column]
-
+            lastWordIndex =   [row, column]
+            print("Last word index after setting direction")
+            print(lastWordIndex)
         }
     }
     
@@ -497,7 +414,8 @@ extension ViewController : UICollectionViewDelegateFlowLayout {
 }
 
 
-//Extend UIColor to generate random colors for cell background color.
+// Extend UIColor to generate random colors for cell background color.
+// Currently not implemented. Could be used to enhance design
 extension UIColor {
     static func random () -> UIColor {
         return UIColor(
