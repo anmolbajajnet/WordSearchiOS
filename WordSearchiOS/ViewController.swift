@@ -19,6 +19,9 @@ class ViewController: UIViewController {
     @IBOutlet weak var mobileLabel: UILabel!
     @IBOutlet weak var swiftLabel: UILabel!
     var score = 0
+    var answerKey = ""
+
+    
     
     @IBAction func startNewGame(_ sender: UIButton) {
         refreshGrid()
@@ -26,6 +29,21 @@ class ViewController: UIViewController {
         scoreLabel.text = String(score)
         wordCollectionView.reloadData()
         resetLabelText()
+    }
+    
+    @IBAction func displayAnswers(_ sender: UIButton) {
+        answerKey.removeAll()
+        for i in 0...5 {
+            answerKey = (answerKey + targetWords[i] + " is at " + "\(targetWordAnswers[i])" + "\n")
+        }
+        
+        let alertController = UIAlertController(title: "You Cheater!", message:
+            answerKey, preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "I'll try harder next time", style: .default))
+        
+        self.present(alertController, animated: true, completion: nil)
+        
+        
     }
     
     
@@ -43,6 +61,7 @@ class ViewController: UIViewController {
                                 ["O","E","F","V","X","B","U","S","K","E","W"]]
     
     let targetWords = ["KOTLIN", "JAVA", "SWIFT", "MOBILE", "VARIABLE", "OBJECTIVEC"]
+    var targetWordAnswers: [[Int]] =  [[2,3],[7,2],[3,6],[3,9],[8,2],[9,0]]
     let totalRows = 10
     let totalColumns = 10
 
@@ -117,6 +136,8 @@ class ViewController: UIViewController {
     }
     
     func refreshGrid() {
+        // Clear saved asnwers
+        targetWordAnswers.removeAll()
         // Change the hardcoded "words" matrix to a randomly generated matrix
         createGrid() // Change the "Words" 2D Array into a newly generated Array
         let randomizedWords = randomizeTargetWords(targetWords: targetWords)
@@ -158,6 +179,7 @@ class ViewController: UIViewController {
                 var wordStrToArray = Array(randomWord)
                 words[row + direction[1]*i][column + direction[0]*i] = String(wordStrToArray[i])
             }
+            targetWordAnswers.append([row,column])
             print("Word \(randomWord) is at \(row) \(column)")
             
         }
