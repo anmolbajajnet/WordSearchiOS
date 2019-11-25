@@ -8,12 +8,11 @@ This iOS Swift application was created as a part of the internship application f
 
 ## Features
 
-Following featues were implemented:
+The Following features were implemented:
 
-1. The word search has atleast 10x10 grid
-2. Keep track of how many words a user has found
+1. The word search has at least a 10x10 grid
+2. Tracks the number of found words
 3. Find the following 6 words: Swift, Kotlin, ObjectiveC, Variable, Java, Mobile
-4. Keep track of how many words a user has found
 5. Randomize where the words are placed
 6. "I'm lazy" button to display hints
 
