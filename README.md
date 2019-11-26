@@ -1,5 +1,7 @@
 # WordSearchiOS
-This iOS Swift application was created as a part of the internship application for Shopify.
+This iOS application was created as a part of the internship application for Shopify.
+
+Language Used: Swift
 
 <img src="https://imgur.com/0sFglP7.png" width="30%">.
 <img src="https://imgur.com/LKEAmtJ.png" width="30%">.
